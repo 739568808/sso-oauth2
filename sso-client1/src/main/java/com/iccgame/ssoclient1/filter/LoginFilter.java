@@ -65,16 +65,20 @@ public class LoginFilter implements Filter{
             return;
         }
         //2、判断地址栏中是否有携带token参数。
-        String token = req.getParameter("token");
-        if (!StringUtils.isEmpty(token)){
+        String code = req.getParameter("code");
+        if (!StringUtils.isEmpty(code)){
             //token地址不为空 说明地址栏中包含了token，拥有令牌
             //判断token是否有认证中心生成的
-            Connection.Response  resp = Jsoup.connect(SSO_URL_PREFIX + "/verify")
-                    .data("token", token)
-                    .data("logOutUrl",CLIENT_HOST_URL+"/logOut")
+            Connection.Response  resp = Jsoup.connect(SSO_URL_PREFIX + "/oauth/token")
+                    .data("client_id", "")
+                    .data("client_secret", "")
+                    .data("response_type", "code")
+                    .data("redirect_uri", "")
+                    .data("code", code)
+                    .data("log_out_url",CLIENT_HOST_URL+"/logOut")
                     .data("sessionid",session.getId())
-                    .data("sessionType","JSESSIONID")
-                    .method(Connection.Method.GET).execute();
+                    .data("session_type","JSESSIONID")
+                    .method(Connection.Method.POST).execute();
             String isVerify = resp.body();
             if ("true".equals(isVerify)){
                 //说明token是有统一认证中心产生的，可以创建局部的会话
