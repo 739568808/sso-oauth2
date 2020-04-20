@@ -12,3 +12,15 @@ spring:
 white_list: http://www.sso.com|http://www.c1.com|http://www.c2.com|http://image.c1.com
 #white_list: www.sso.com|www.c1.com
 timeout: 14 #redi缓存时间，单位天，永不过期填 -1
+
+
+mybatis-plus:
+  global-config:
+    db-config:
+      id-type: auto
+      field-strategy: not_empty
+      table-underline: true
+      db-type: mysql
+      logic-delete-value: 1 # 逻辑已删除值(默认为 1)
+      logic-not-delete-value: 0 # 逻辑未删除值(默认为 0)
+  mapper-locations: classpath:/mapper/*.xml

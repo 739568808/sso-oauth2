@@ -5,7 +5,6 @@ public class ClientInfoVo  {
     private String logOutUrl;
     private String sessionid;
     private String sessionType;
-    private User user;
 
     public String getLogOutUrl() {
         return logOutUrl;
@@ -29,13 +28,5 @@ public class ClientInfoVo  {
 
     public void setSessionType(String sessionType) {
         this.sessionType = sessionType;
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
     }
 }

@@ -1,9 +1,17 @@
 var passportUrl = "http://www.sso.com:8080";//认证中心地址
 var redirectUrl = document.getElementById('login').getAttribute('redirectUrl');
+var client_id = document.getElementById('login').getAttribute('client_id');
 var gameid = document.getElementById('login').getAttribute('gameid');
-var htmml = "<form id='login' method=\"post\" action=\""+passportUrl+"/login\">\n" +
-    "    <input type=\"hidden\" name=\"redirectUrl\" value="+redirectUrl+">\n" +
-    "    <input type=\"hidden\" name=\"gameid\" value="+gameid+">\n" +
+var response_type = document.getElementById('login').getAttribute('response_type');
+var scope = document.getElementById('login').getAttribute('scope');
+var state = document.getElementById('login').getAttribute('state');
+var loginHtml = "<form id='sso-login-form' method=\"post\" action=\""+passportUrl+"/login\">\n" +
+    "    <input type=\"hidden\" name=\"redirect_url\" value="+redirectUrl+">\n" +
+    "    <input type=\"hidden\" name=\"game_id\" value="+gameid+">\n" +
+    "    <input type=\"hidden\" name=\"client_id\" value="+client_id+">\n" +
+    "    <input type=\"hidden\" name=\"response_type\" value="+response_type+">\n" +
+    "    <input type=\"hidden\" name=\"scope\" value="+scope+">\n" +
+    "    <input type=\"hidden\" name=\"state\" value="+state+">\n" +
     "    <div>游戏类型：<span id='gameName'></span></div>\n"+
     "    <label>账户</label><input type=\"text\" name=\"username\">\n" +
     "    <label>密码</label><input type=\"password\" name=\"password\">\n" +
@@ -13,7 +21,7 @@ var htmml = "<form id='login' method=\"post\" action=\""+passportUrl+"/login\">\
 
 var errMsg = getQueryVariable("errMsg");
 if(errMsg!=''&&errMsg!=null){
-    htmml+="<div>"+errMsg+"</div>";
+    loginHtml+="<div>"+errMsg+"</div>";
 }
 
 var SSO_Ajax = {
@@ -58,14 +66,12 @@ var SSO_Ajax = {
  * 游戏id
  */
 if (gameid!=''&&gameid!=null){
-
     SSO_Ajax.get(passportUrl+"/getGameType?gameid="+gameid,function (data) {
         var obj = JSON.parse(data);
-
-        //TODO  请求游戏类型
         if (obj.code==200){
-
             document.getElementById("gameName").innerText= obj.data.gameName;
+        }else{
+            document.getElementById("gameName").innerText= "--";
         }
     })
 }
@@ -88,4 +94,4 @@ function getQueryVariable(variable)
 
 
 //显示登录框
-document.write(htmml)
+document.write(loginHtml)

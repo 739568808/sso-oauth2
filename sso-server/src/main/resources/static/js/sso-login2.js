@@ -1,13 +1,21 @@
 var passportUrl = "http://www.sso.com:8080";//认证中心地址
 var redirectUrl = document.getElementById('login').getAttribute('redirectUrl');
+var client_id = document.getElementById('login').getAttribute('client_id');
 var gameid = document.getElementById('login').getAttribute('gameid');
-var htmml = "<form id='login' method=\"post\" action=\""+passportUrl+"/login\">\n" +
-    "    <input type=\"hidden\" id='redirectUrl' name=\"redirectUrl\" value="+redirectUrl+">\n" +
-    "    <input type=\"hidden\" name=\"gameid\" id='gameid' value="+gameid+">\n" +
+var response_type = document.getElementById('login').getAttribute('response_type');
+var scope = document.getElementById('login').getAttribute('scope');
+var state = document.getElementById('login').getAttribute('state');
+var htmml = "<form id='sso-login-form' method='post' action=\""+passportUrl+"/login\">\n" +
+    "    <input type='hidden' name='redirectUrl' value="+redirectUrl+">\n" +
+    "    <input type='hidden' name='gameid' value="+gameid+">\n" +
+    "    <input type='hidden' name='clientid' value="+client_id+">\n" +
+    "    <input type='hidden' name='responsetype' value="+response_type+">\n" +
+    "    <input type='hidden' name='scope' value="+scope+">\n" +
+    "    <input type='hidden' name='state' value="+state+">\n" +
     "    <div>游戏类型：<span id='gameName'></span></div>\n"+
-    "    <label>账户</label><input id='username' type=\"text\" name=\"username\">\n" +
-    "    <label>密码</label><input id='password' type=\"password\" name=\"password\">\n" +
-    "    <input type=\"button\" value=\"登录\" onclick='login()'>\n" +
+    "    <label>账户</label><input id='username' type='text' name='username'>\n" +
+    "    <label>密码</label><input id='password' type='password' name='password'>\n" +
+    "    <input type='button' value='登录' onclick='login()'>\n" +
     "</form>";
 
 
@@ -63,21 +71,17 @@ var SSO_Ajax = {
  * 游戏id
  */
 if (gameid!=''&&gameid!=null){
-
     SSO_Ajax.get(passportUrl+"/getGameType?gameid="+gameid,function (data) {
         var obj = JSON.parse(data);
-
-        //TODO  请求游戏类型
         if (obj.code==200){
-
             document.getElementById("gameName").innerText= obj.data.gameName;
+        }else{
+            document.getElementById("gameName").innerText= "--";
         }
     })
 }
 
-
-function getQueryVariable(variable)
-{
+function getQueryVariable(variable) {
     var query = window.location.search.substring(1);
     var vars = query.split("&");
     for (var i=0;i<vars.length;i++) {
@@ -100,13 +104,16 @@ function login(){
         alert("密码不能为空")
         return;
     }
-    var param = "redirectUrl="+redirectUrl+"&username="+username+"&password="+password
+    if (client_id ==null || client_id==''){
+        alert("参数异常");
+        return;
+    }
+    var param = "redirectUrl="+redirectUrl+"&username="+username+"&password="+password+"&clientid="+client_id+"&responsetype="+response_type+"&scope="+scope+"&state="+state
     SSO_Ajax.post(passportUrl+"/login2",param,function (data) {
         var obj = JSON.parse(data);
-
         //TODO  请求游戏类型
         if (obj.code==200){
-            location.href = redirectUrl+"?token="+obj.data
+            location.href = redirectUrl+"?"+response_type+"="+obj.data
         }else {
             alert(obj.msg);
             return;

@@ -1,7 +1,7 @@
 package com.iccgame.ssoserver.listener;
 
 import com.alibaba.fastjson.JSON;
-import com.iccgame.ssoserver.enums.EToken;
+import com.iccgame.ssoserver.enums.ECODE;
 import com.iccgame.ssoserver.util.MockDatabaseUtil;
 import com.iccgame.ssoserver.util.RedisUtils;
 import com.iccgame.ssoserver.vo.ClientInfoVo;
@@ -29,8 +29,8 @@ public class SessionListener implements HttpSessionListener {
         String token = (String)session.getAttribute("token");
         System.out.println("logOut token:"+token);
         //删除t_token表中的数据
-        String tokenKey = redisUtils.getSSOKey(EToken.TOKEN.getName(), token);
-        String tokenClientInfoKey = redisUtils.getSSOKey(EToken.TOKEN_CLIENT_INFO.getName(), token);
+        String tokenKey = redisUtils.getSSOKey(ECODE.CODE.getName(), token);
+        String tokenClientInfoKey = redisUtils.getSSOKey(ECODE.CODE_CLIENT_INFO.getName(), token);
 
         //MockDatabaseUtil.T_TOKEN.remove(token);
         //List<ClientInfoVo> infoVoList = MockDatabaseUtil.T_CLIENT_INFO.remove(token);

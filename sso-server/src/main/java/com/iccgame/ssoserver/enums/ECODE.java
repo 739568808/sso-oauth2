@@ -1,11 +1,11 @@
 package com.iccgame.ssoserver.enums;
 
-public enum EToken {
+public enum ECODE {
 
 
 
 
-	TOKEN_CLIENT_INFO("SSO:CLIENT:INFO",1),
+    CODE_CLIENT_INFO("SSO:CLIENT:INFO",1),
 
 
 
@@ -19,18 +19,18 @@ public enum EToken {
 
 
 	//--------------------------------分割线此以下禁止写代码-------------------------------------------------
-	TOKEN("SSO:TOKEN", 0);
+	CODE("SSO:CODE", 0);
     // 成员变量
     private String name;
     private int code;
     // 构造方法
-    private EToken(String name, int code) {
+    private ECODE(String name, int code) {
         this.name = name;  
         this.code = code;  
     }  
     // 普通方法  
     public static String getName(int code) {  
-        for (EToken c : EToken.values()) {
+        for (ECODE c : ECODE.values()) {
             if (c.getCode() == code) {  
                 return c.name;  
             }  
