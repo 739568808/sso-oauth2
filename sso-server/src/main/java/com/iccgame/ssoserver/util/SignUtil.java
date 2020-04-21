@@ -1,8 +1,11 @@
 package com.iccgame.ssoserver.util;
 
-import java.util.*;
-
 import org.apache.commons.codec.digest.DigestUtils;
+
+import java.util.Iterator;
+import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 /**
  * 在每次请求接口时需根据参数、apikey、token临时构建出signature签名，最大程度保障接口安全性，构建规则如下；
@@ -15,9 +18,15 @@ public class SignUtil {
     public static void main(String[] args) {
         //sign();
         SortedMap<String, String> params = new TreeMap<String, String>();
-        params.put("name", "xiaoming");
-        params.put("age", "20");
-        sign(params);
+        params.put("client_id", "123456789");
+        params.put("response_type", "code");
+        params.put("redirect_uri", "");
+        params.put("code", "code");
+        params.put("session_type", "JSESSIONID");
+        params.put("sessionid", "sessionid");
+        params.put("log_out_url", "/logOut");
+        params.put("client_secret","123456789123456789");
+        String sign = sign(params);
 
     }
 
@@ -40,11 +49,9 @@ public class SignUtil {
                 sb.append(k + "=" + v + "&");
             }
         }
-
-        sb.append("secretKey=SASDADSDDDFFFDGHGJHGFDVV");
-
-        System.out.println("加密前："+sb.toString());
-        System.out.println("加密后："+md5(sb.toString()));
-        return md5(sb.toString());
+        String param = sb.toString().substring(0,sb.toString().length() - 1);
+        System.out.println("加密前："+param);
+        System.out.println("加密后："+md5(param));
+        return md5(param);
     }
 }

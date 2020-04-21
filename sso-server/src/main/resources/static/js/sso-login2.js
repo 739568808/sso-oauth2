@@ -5,11 +5,11 @@ var gameid = document.getElementById('login').getAttribute('gameid');
 var response_type = document.getElementById('login').getAttribute('response_type');
 var scope = document.getElementById('login').getAttribute('scope');
 var state = document.getElementById('login').getAttribute('state');
-var htmml = "<form id='sso-login-form' method='post' action=\""+passportUrl+"/login\">\n" +
+var htmml = "<form id='sso-login-form' method='post' action=\""+passportUrl+"/login2\">\n" +
     "    <input type='hidden' name='redirectUrl' value="+redirectUrl+">\n" +
-    "    <input type='hidden' name='gameid' value="+gameid+">\n" +
-    "    <input type='hidden' name='clientid' value="+client_id+">\n" +
-    "    <input type='hidden' name='responsetype' value="+response_type+">\n" +
+    "    <input type='hidden' name='game_id' value="+gameid+">\n" +
+    "    <input type='hidden' name='client_id' value="+client_id+">\n" +
+    "    <input type='hidden' name='response_type' value="+response_type+">\n" +
     "    <input type='hidden' name='scope' value="+scope+">\n" +
     "    <input type='hidden' name='state' value="+state+">\n" +
     "    <div>游戏类型：<span id='gameName'></span></div>\n"+
@@ -93,14 +93,13 @@ function getQueryVariable(variable) {
 
 
 function login(){
-    var redirectUrl = document.getElementById("redirectUrl").value;
     var username = document.getElementById("username").value;
     var password = document.getElementById("password").value;
-    if (username ==null || password==''){
+    if (username ==null || username==''){
         alert("用户名不能为空")
         return;
     }
-    if (username ==null || password==''){
+    if (password ==null || password==''){
         alert("密码不能为空")
         return;
     }
@@ -108,7 +107,7 @@ function login(){
         alert("参数异常");
         return;
     }
-    var param = "redirectUrl="+redirectUrl+"&username="+username+"&password="+password+"&clientid="+client_id+"&responsetype="+response_type+"&scope="+scope+"&state="+state
+    var param = "redirectUrl="+redirectUrl+"&username="+username+"&password="+password+"&client_id="+client_id+"&response_type="+response_type+"&scope="+scope+"&state="+state
     SSO_Ajax.post(passportUrl+"/login2",param,function (data) {
         var obj = JSON.parse(data);
         //TODO  请求游戏类型

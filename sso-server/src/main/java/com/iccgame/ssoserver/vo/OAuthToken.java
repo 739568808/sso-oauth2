@@ -2,13 +2,14 @@ package com.iccgame.ssoserver.vo;
 
 public class OAuthToken {
     private String code;
-    private String logOutUrl;
-    private String sessionType;
-    private String sessionid;
+    private String log_out_url;
+    private String session_type;
+    private String session_id;
     private String client_id;
     private String client_secret;
     private String response_type;
     private String redirect_uri;
+    private String sign;
 
     public String getCode() {
         return code;
@@ -18,28 +19,28 @@ public class OAuthToken {
         this.code = code;
     }
 
-    public String getLogOutUrl() {
-        return logOutUrl;
+    public String getLog_out_url() {
+        return log_out_url;
     }
 
-    public void setLogOutUrl(String logOutUrl) {
-        this.logOutUrl = logOutUrl;
+    public void setLog_out_url(String log_out_url) {
+        this.log_out_url = log_out_url;
     }
 
-    public String getSessionType() {
-        return sessionType;
+    public String getSession_type() {
+        return session_type;
     }
 
-    public void setSessionType(String sessionType) {
-        this.sessionType = sessionType;
+    public void setSession_type(String session_type) {
+        this.session_type = session_type;
     }
 
-    public String getSessionid() {
-        return sessionid;
+    public String getSession_id() {
+        return session_id;
     }
 
-    public void setSessionid(String sessionid) {
-        this.sessionid = sessionid;
+    public void setSession_id(String session_id) {
+        this.session_id = session_id;
     }
 
     public String getClient_id() {
@@ -72,5 +73,13 @@ public class OAuthToken {
 
     public void setRedirect_uri(String redirect_uri) {
         this.redirect_uri = redirect_uri;
+    }
+
+    public String getSign() {
+        return sign;
+    }
+
+    public void setSign(String sign) {
+        this.sign = sign;
     }
 }

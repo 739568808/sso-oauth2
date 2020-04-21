@@ -2,8 +2,17 @@ server:
   port: 8080
 
 spring:
+  datasource:
+    druid:
+      driverClassName: com.mysql.jdbc.Driver
+      #url: jdbc:mysql://172.21.0.9:3306/tools?useUnicode=yes&characterEncoding=UTF-8&useSSL=false
+      url: jdbc:mysql://140.143.153.240:3306/tools?useUnicode=yes&characterEncoding=UTF-8&useSSL=false
+      username: root
+      password: 9ol./;p0
+      maxActive: 50
+      minIdle: 5
   redis:
-    host: 127.0.0.1
+    host: 140.143.153.240
     port: 6379
     password:
     max-idle: 20
@@ -11,7 +20,6 @@ spring:
     max-wait-millis: 3000
 white_list: http://www.sso.com|http://www.c1.com|http://www.c2.com|http://image.c1.com
 #white_list: www.sso.com|www.c1.com
-timeout: 14 #redi缓存时间，单位天，永不过期填 -1
 
 
 mybatis-plus:
@@ -24,3 +32,12 @@ mybatis-plus:
       logic-delete-value: 1 # 逻辑已删除值(默认为 1)
       logic-not-delete-value: 0 # 逻辑未删除值(默认为 0)
   mapper-locations: classpath:/mapper/*.xml
+
+
+
+#access_token过期时间
+access_token_timeout: 7200  #秒
+#refresh_token过期时间
+refresh_token_timeout: 30 #天
+#授权码过期时间
+code_timeout: 15 #分钟

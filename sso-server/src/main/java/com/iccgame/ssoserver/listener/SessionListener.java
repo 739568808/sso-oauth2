@@ -26,11 +26,10 @@ public class SessionListener implements HttpSessionListener {
     public void sessionDestroyed(HttpSessionEvent se) {
         System.out.println("触发了session销毁事件......");
         HttpSession session = se.getSession();
-        String token = (String)session.getAttribute("token");
-        System.out.println("logOut token:"+token);
+        String code = (String)session.getAttribute("code");
         //删除t_token表中的数据
-        String tokenKey = redisUtils.getSSOKey(ECODE.CODE.getName(), token);
-        String tokenClientInfoKey = redisUtils.getSSOKey(ECODE.CODE_CLIENT_INFO.getName(), token);
+        String tokenKey = redisUtils.getSSOKey(ECODE.CODE.getName(), code);
+        String tokenClientInfoKey = redisUtils.getSSOKey(ECODE.CODE_CLIENT_INFO.getName(), code);
 
         //MockDatabaseUtil.T_TOKEN.remove(token);
         //List<ClientInfoVo> infoVoList = MockDatabaseUtil.T_CLIENT_INFO.remove(token);
