@@ -1,7 +1,10 @@
 package com.iccgame.ssoclient2.filter;
 
+
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -14,6 +17,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import com.iccgame.ssoclient2.util.SignUtil;
+import net.sf.json.JSON;
+import net.sf.json.JSONObject;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.springframework.beans.factory.annotation.Value;
@@ -65,20 +71,39 @@ public class LoginFilter implements Filter{
             return;
         }
         //2、判断地址栏中是否有携带token参数。
-        String token = req.getParameter("token");
-        if (!StringUtils.isEmpty(token)){
+        String code = req.getParameter("code");
+        if (!StringUtils.isEmpty(code)){
             //token地址不为空 说明地址栏中包含了token，拥有令牌
             //判断token是否有认证中心生成的
-            Connection.Response  resp = Jsoup.connect(SSO_URL_PREFIX + "/verify")
-                    .data("token", token)
-                    .data("logOutUrl",CLIENT_HOST_URL+"/logOut")
-                    .data("sessionid",session.getId())
-                    .data("sessionType","JSESSIONID")
-                    .method(Connection.Method.GET).execute();
-            String isVerify = resp.body();
-            if ("true".equals(isVerify)){
+
+            SortedMap<String, String> params = new TreeMap<String, String>();
+            params.put("client_id", "123456789");
+            params.put("response_type", "code");
+            params.put("redirect_uri", "");
+            params.put("code", code);
+            params.put("session_type", "JSESSIONID");
+            params.put("session_id", session.getId());
+            params.put("log_out_url", CLIENT_HOST_URL+"/logOut");
+            params.put("client_secret","123456789123456789");
+            String sign = SignUtil.sign(params);
+
+
+            Connection.Response  resp = Jsoup.connect(SSO_URL_PREFIX + "/oauth/token")
+                    .data("client_id", "123456789")
+                    .data("sign", sign)
+                    .data("response_type", "code")
+                    .data("redirect_uri", "")
+                    .data("code", code)
+                    .data("log_out_url",CLIENT_HOST_URL+"/logOut")
+                    .data("session_id",session.getId())
+                    .data("session_type","JSESSIONID")
+                    .method(Connection.Method.POST).execute();
+            String result = resp.body();
+            JSONObject object = JSONObject.fromObject(result);
+            if (object.getInt("code")==200){
                 //说明token是有统一认证中心产生的，可以创建局部的会话
                 session.setAttribute("isLogin",true);
+                JSONObject info = object.getJSONObject("info");
                 //放行该次请求
                 reqLogOut(req);
                 chain.doFilter(request, response);
