@@ -203,7 +203,13 @@ public class SSOServerController {
         //给access_token重新赋值
         redisUtils.set(refresh_token_sb.toString(),userStr,Long.valueOf(refresh_token_timeout),TimeUnit.DAYS);
         //User user = JSONObject.toJavaObject(JSON.parseObject(userStr), User.class);
-        return ResultUtil.success(new Token(this.refresh_access_token(oAuthToken.getClient_id(),refresh_token),refresh_token,oAuthToken.getClient_id(),userStr));
+        String accessTokenStr = this.refresh_access_token(oAuthToken.getClient_id(), refresh_token);
+        JSONObject accessTokenObj = JSONObject.parseObject(accessTokenStr);
+
+        //认证成功清除授权code，只使用一次授权码
+        redisUtils.del(codeKey);
+
+        return ResultUtil.success(new Token(accessTokenObj.getString("data"),refresh_token,oAuthToken.getClient_id(),userStr));
     }
 
     /**

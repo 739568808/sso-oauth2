@@ -50,8 +50,8 @@ public class SignUtil {
             }
         }
         String param = sb.toString().substring(0,sb.toString().length() - 1);
-        System.out.println("加密前："+param);
-        System.out.println("加密后："+md5(param));
+//        System.out.println("加密前："+param);
+//        System.out.println("加密后："+md5(param));
         return md5(param);
     }
 }

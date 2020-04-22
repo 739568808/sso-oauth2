@@ -23,7 +23,6 @@ public class JwtUtil {
 
     /**
      * 生成签名,15分钟后过期
-     * @param username
      * @return
      */
     public static String sign(String client_id,String client_secret){
