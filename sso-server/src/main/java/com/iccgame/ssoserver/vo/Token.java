@@ -21,7 +21,7 @@ public class Token {
 
     public String getToken_type() {
         if (StringUtils.isEmpty(token_type)){
-            token_type = "bearer";
+            token_type = "Bearer";
         }
         return token_type;
     }
