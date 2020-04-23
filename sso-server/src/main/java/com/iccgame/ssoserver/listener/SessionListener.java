@@ -31,8 +31,6 @@ public class SessionListener implements HttpSessionListener {
         String tokenKey = redisUtils.getSSOKey(ECODE.CODE.getName(), code);
         String tokenClientInfoKey = redisUtils.getSSOKey(ECODE.CODE_CLIENT_INFO.getName(), code);
 
-        //MockDatabaseUtil.T_TOKEN.remove(token);
-        //List<ClientInfoVo> infoVoList = MockDatabaseUtil.T_CLIENT_INFO.remove(token);
         String tokenClientInfoStr = redisUtils.get(tokenClientInfoKey);
         List<ClientInfoVo> clientInfoList = JSON.parseArray(tokenClientInfoStr, ClientInfoVo.class);
         if (!CollectionUtils.isEmpty(clientInfoList)){

@@ -1,16 +1,15 @@
 package com.iccgame.ssoserver.controller;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.iccgame.ssoserver.domain.entity.TbOauth2;
 import com.iccgame.ssoserver.enums.ECODE;
 import com.iccgame.ssoserver.service.TbOauth2Service;
-import com.iccgame.ssoserver.util.JwtUtil;
-import com.iccgame.ssoserver.util.RedisUtils;
-import com.iccgame.ssoserver.util.ResultUtil;
-import com.iccgame.ssoserver.util.SignUtil;
+import com.iccgame.ssoserver.util.*;
 import com.iccgame.ssoserver.vo.*;
+import net.sf.jsqlparser.expression.JsonExpression;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +25,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -57,39 +57,17 @@ public class SSOServerController {
     @RequestMapping("/checkLogin")
     public String checklogin(String redirectUrl, HttpSession session,RedirectAttributes redirectAttributes){
 
-        //白名单校验
-//        if (!whiteListVerify(redirectUrl)){
-//            return "redirect:404";
-//        }
-
         //1、判断是否有全局的会话
         String code = (String) session.getAttribute("code");
         if (StringUtils.isEmpty(code)){
             //没有全局会话
-            //跳转到统一认证中心的登录界面
-            //redirectAttributes.addAttribute("redirectUrl",redirectUrl);
-            //return "login";
             return "redirect:"+redirectUrl+"login";
         } else {
             //有全局会话
-            //取出令牌信息，重定向到redirectUrl,把token带上
             redirectAttributes.addAttribute("code",code);
             return "redirect:"+redirectUrl;
         }
     }
-//
-//    private boolean whiteListVerify(String redirectUrl){
-//        String[] whiteArr = whiteList.split("\\|");
-//        boolean isWhite = false;
-//        for (String addr:whiteArr){
-//            if (redirectUrl.startsWith(addr)){
-//                isWhite = true;
-//                break;
-//            }
-//        }
-//        return isWhite;
-//    }
-
 
     /**
      * 授权登录
@@ -156,19 +134,22 @@ public class SSOServerController {
         User user = new User("admin","男",26);
         if ("admin".equals(login.getUsername()) && "123456".equals(login.getPassword())){
             //1、创建授权码
-            String code = UUID.randomUUID().toString();
+            //String code = UUID.randomUUID().toString();
+            String code = MI.encoder(JSON.toJSONString(user));
             //2、创建全局会话，将令牌放入会话中
             session.setAttribute("code",code);
             //3、将令牌信息放入数据库中（redis中）
-            String key = redisUtils.getSSOKey(ECODE.CODE.getName(), code);
-            //授权码code默认保存15分钟,保存用户登录信息
-            redisUtils.set(key,JSONObject.toJSONString(user),Long.valueOf(code_timeout), TimeUnit.MINUTES);
+
+//            String key = redisUtils.getSSOKey(ECODE.CODE.getName(), code);
+//            //授权码code默认保存15分钟,保存用户登录信息
+//            redisUtils.set(key,code,Long.valueOf(code_timeout), TimeUnit.MINUTES);
 
             return ResultUtil.success(code);
         }
         return ResultUtil.error("账户名或密码错误");
     }
 
+    
     /**
      * 获取token
      * @param oAuthToken
@@ -176,7 +157,7 @@ public class SSOServerController {
      */
     @PostMapping("/oauth/token")
     @ResponseBody
-    public String verifyToken(OAuthToken oAuthToken){
+    public String verifyToken(OAuthToken oAuthToken,HttpSession session){
         TbOauth2  oauth2 = oauth2Service.getOne(new QueryWrapper<TbOauth2>().eq("client_id", oAuthToken.getClient_id()).last(" limit 1"));
         if (null == oauth2 || !oauth2.getClientSecret().equals(oauth2.getClientSecret())){
             return ResultUtil.error(1001,"client_id或client_secret错误");
@@ -184,15 +165,35 @@ public class SSOServerController {
         if (StringUtils.isEmpty(oAuthToken.getSign())){
             return ResultUtil.error(3010,"签名不允许为空");
         }
-        if (!oAuthToken.getSign().equals(this.getSign(oAuthToken,oauth2.getClientSecret()))){
+        if (!oAuthToken.getSign().equals(getSign(oAuthToken,oauth2.getClientSecret()))){
             return ResultUtil.error(3001,"签名校验失败");
         }
+
         String codeKey = redisUtils.getSSOKey(ECODE.CODE.getName(), oAuthToken.getCode());
-        String userStr = redisUtils.get(codeKey);
-        if (StringUtils.isEmpty(userStr)){
+        //String userStr = redisUtils.get(codeKey);
+//        if (StringUtils.isEmpty(userStr)){
+//            return ResultUtil.error(2002,"code失效或不存在");
+//        }
+        String userStr = MI.decoder(oAuthToken.getCode());
+        System.out.println("用户信息解密后："+userStr);
+        JSONObject object = null;
+        try {
+            object = JSONObject.parseObject(userStr);
+        }catch (JSONException e){}
+        if (null == object){
             return ResultUtil.error(2002,"code失效或不存在");
         }
-        if (!this.addClientInfo(oAuthToken)){
+        User user = null;
+        try {
+            user = JSON.toJavaObject(object, User.class);
+        }catch (JSONException e){}
+        if (null == user){
+            return ResultUtil.error(2002,"code失效或不存在");
+        }
+
+
+
+        if (!addClientInfo(oAuthToken,session)){
             return ResultUtil.error(2001,"系统异常");
         }
         //refresh_token
@@ -205,9 +206,8 @@ public class SSOServerController {
         //User user = JSONObject.toJavaObject(JSON.parseObject(userStr), User.class);
         String accessTokenStr = this.refresh_access_token(oAuthToken.getClient_id(), refresh_token);
         JSONObject accessTokenObj = JSONObject.parseObject(accessTokenStr);
-
-        //认证成功清除授权code，只使用一次授权码
-        redisUtils.del(codeKey);
+        //
+        //if (redisUtils.hasKey(codeKey)){redisUtils.del(codeKey);}
 
         return ResultUtil.success(new Token(accessTokenObj.getString("data"),refresh_token,oAuthToken.getClient_id(),userStr));
     }
@@ -335,8 +335,9 @@ public class SSOServerController {
      * @param oAuthToken
      * @return
      */
-    private  boolean addClientInfo(OAuthToken oAuthToken){
-        String codeClientInfoKey = redisUtils.getSSOKey(ECODE.CODE_CLIENT_INFO.getName(),  oAuthToken.getCode());
+    private  boolean addClientInfo(OAuthToken oAuthToken,HttpSession session){
+
+        String codeClientInfoKey = redisUtils.getSSOKey(ECODE.CODE_CLIENT_INFO.getName(),oAuthToken.getCode());
         //把客户端退出地址记录起来，单点退出用
         String tokenClientInfoStr = redisUtils.get(codeClientInfoKey);
         List<ClientInfoVo> clientInfoList = JSON.parseArray(tokenClientInfoStr, ClientInfoVo.class);
