@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -32,8 +33,7 @@ import java.util.stream.Collectors;
 
 @Controller
 public class SSOServerController {
-    @Value("${white_list}")
-    private String whiteList;
+
     @Value("${code_timeout}")
     private String code_timeout;
     @Value("${refresh_token_timeout}")
@@ -55,7 +55,7 @@ public class SSOServerController {
      * @return
      */
     @RequestMapping("/checkLogin")
-    public String checklogin(String redirectUrl, HttpSession session,RedirectAttributes redirectAttributes){
+    public String checklogin(String redirectUrl, HttpSession session,RedirectAttributes redirectAttributes,HttpServletRequest request){
 
         //1、判断是否有全局的会话
         String code = (String) session.getAttribute("code");
@@ -131,18 +131,20 @@ public class SSOServerController {
         }
 
         //TODO user信息填充
-        User user = new User("admin","男",26);
+        User user = new User("1","admin","男",26);
         if ("admin".equals(login.getUsername()) && "123456".equals(login.getPassword())){
             //1、创建授权码
-            //String code = UUID.randomUUID().toString();
-            String code = MI.encoder(JSON.toJSONString(user));
-            //2、创建全局会话，将令牌放入会话中
-            session.setAttribute("code",code);
-            //3、将令牌信息放入数据库中（redis中）
+            String code = UUID.randomUUID().toString();
+            //String code = MI.encoder(JSON.toJSONString(user));
 
-//            String key = redisUtils.getSSOKey(ECODE.CODE.getName(), code);
-//            //授权码code默认保存15分钟,保存用户登录信息
-//            redisUtils.set(key,code,Long.valueOf(code_timeout), TimeUnit.MINUTES);
+            //2、创建全局会话，将令牌放入会话中
+
+            session.setAttribute("code",code);
+
+            //3、将令牌信息放入数据库中（redis中）
+            String key = redisUtils.getSSOKey(ECODE.CODE.getName(), code+IpUtil.getIpAddress(request));
+           //授权码code默认保存15分钟,保存用户登录信息
+            redisUtils.set(key,code,Long.valueOf(code_timeout), TimeUnit.MINUTES);
 
             return ResultUtil.success(code);
         }
@@ -155,7 +157,7 @@ public class SSOServerController {
      * @param oAuthToken
      * @return
      */
-    @PostMapping("/oauth/token")
+    @RequestMapping("/oauth/token")
     @ResponseBody
     public String verifyToken(OAuthToken oAuthToken,HttpSession session){
         TbOauth2  oauth2 = oauth2Service.getOne(new QueryWrapper<TbOauth2>().eq("client_id", oAuthToken.getClient_id()).last(" limit 1"));
@@ -169,31 +171,13 @@ public class SSOServerController {
             return ResultUtil.error(3001,"签名校验失败");
         }
 
-        String codeKey = redisUtils.getSSOKey(ECODE.CODE.getName(), oAuthToken.getCode());
-        //String userStr = redisUtils.get(codeKey);
-//        if (StringUtils.isEmpty(userStr)){
-//            return ResultUtil.error(2002,"code失效或不存在");
-//        }
-        String userStr = MI.decoder(oAuthToken.getCode());
-        System.out.println("用户信息解密后："+userStr);
-        JSONObject object = null;
-        try {
-            object = JSONObject.parseObject(userStr);
-        }catch (JSONException e){}
-        if (null == object){
-            return ResultUtil.error(2002,"code失效或不存在");
-        }
-        User user = null;
-        try {
-            user = JSON.toJavaObject(object, User.class);
-        }catch (JSONException e){}
-        if (null == user){
+        String codeKey = redisUtils.getSSOKey(ECODE.CODE.getName(), oAuthToken.getCode()+oAuthToken.getIp());
+        String code = redisUtils.get(codeKey);
+        if (StringUtils.isEmpty(code)){
             return ResultUtil.error(2002,"code失效或不存在");
         }
 
-
-
-        if (!addClientInfo(oAuthToken,session)){
+        if (!addClientInfo(oAuthToken)){
             return ResultUtil.error(2001,"系统异常");
         }
         //refresh_token
@@ -202,14 +186,14 @@ public class SSOServerController {
         StringBuilder refresh_token_sb = new StringBuilder();
         refresh_token_sb.append("refresh_token").append(":").append(oAuthToken.getClient_id()).append(":").append(refresh_token);
         //给access_token重新赋值
-        redisUtils.set(refresh_token_sb.toString(),userStr,Long.valueOf(refresh_token_timeout),TimeUnit.DAYS);
+        redisUtils.set(refresh_token_sb.toString(),refresh_token,Long.valueOf(refresh_token_timeout),TimeUnit.DAYS);
         //User user = JSONObject.toJavaObject(JSON.parseObject(userStr), User.class);
         String accessTokenStr = this.refresh_access_token(oAuthToken.getClient_id(), refresh_token);
         JSONObject accessTokenObj = JSONObject.parseObject(accessTokenStr);
         //
         //if (redisUtils.hasKey(codeKey)){redisUtils.del(codeKey);}
 
-        return ResultUtil.success(new Token(accessTokenObj.getString("data"),refresh_token,oAuthToken.getClient_id(),userStr));
+        return ResultUtil.success(new Token(accessTokenObj.getString("data"),refresh_token,oAuthToken.getClient_id(),null));
     }
 
     /**
@@ -325,6 +309,7 @@ public class SSOServerController {
         params.put("session_id", oAuthToken.getSession_id());
         params.put("log_out_url", oAuthToken.getLog_out_url());
         params.put("client_secret",client_secret);
+        params.put("ip",oAuthToken.getIp());
         String sign = SignUtil.sign(params);
         return  sign;
     }
@@ -335,8 +320,7 @@ public class SSOServerController {
      * @param oAuthToken
      * @return
      */
-    private  boolean addClientInfo(OAuthToken oAuthToken,HttpSession session){
-
+    private  boolean addClientInfo(OAuthToken oAuthToken){
         String codeClientInfoKey = redisUtils.getSSOKey(ECODE.CODE_CLIENT_INFO.getName(),oAuthToken.getCode());
         //把客户端退出地址记录起来，单点退出用
         String tokenClientInfoStr = redisUtils.get(codeClientInfoKey);

@@ -10,6 +10,7 @@ public class OAuthToken {
     private String response_type;
     private String redirect_uri;
     private String sign;
+    private String ip;
 
     public String getCode() {
         return code;
@@ -81,5 +82,13 @@ public class OAuthToken {
 
     public void setSign(String sign) {
         this.sign = sign;
+    }
+
+    public String getIp() {
+        return ip;
+    }
+
+    public void setIp(String ip) {
+        this.ip = ip;
     }
 }

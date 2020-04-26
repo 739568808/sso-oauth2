@@ -18,8 +18,6 @@ spring:
     max-idle: 20
     max-total: 100
     max-wait-millis: 3000
-white_list: http://www.sso.com|http://www.c1.com|http://www.c2.com|http://image.c1.com
-#white_list: www.sso.com|www.c1.com
 
 
 mybatis-plus:
