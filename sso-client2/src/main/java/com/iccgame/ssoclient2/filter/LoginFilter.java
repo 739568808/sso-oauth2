@@ -17,6 +17,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import com.iccgame.ssoclient2.util.IpUtil;
 import com.iccgame.ssoclient2.util.SignUtil;
 import net.sf.json.JSON;
 import net.sf.json.JSONObject;
@@ -61,8 +62,10 @@ public class LoginFilter implements Filter{
         }
         System.out.println("开始拦截了................");
         //1、判断请求地址是否存在
-        //TODO 不存在自行挑战
+        //TODO 不存在自行跳转
         //1、判断是否有局部的会话
+        String ip = IpUtil.getIpAddress(req);
+        System.out.println("ip:"+ip);
         HttpSession session = req.getSession();
         Boolean isLogin = (Boolean)session.getAttribute("isLogin");
         if (null!=isLogin && isLogin){
@@ -85,6 +88,7 @@ public class LoginFilter implements Filter{
             params.put("session_id", session.getId());
             params.put("log_out_url", CLIENT_HOST_URL+"/logOut");
             params.put("client_secret","123456789123456789");
+            params.put("ip",ip);
             String sign = SignUtil.sign(params);
 
 
@@ -97,6 +101,7 @@ public class LoginFilter implements Filter{
                     .data("log_out_url",CLIENT_HOST_URL+"/logOut")
                     .data("session_id",session.getId())
                     .data("session_type","JSESSIONID")
+                    .data("ip",ip)
                     .method(Connection.Method.POST).execute();
             String result = resp.body();
             JSONObject object = JSONObject.fromObject(result);
