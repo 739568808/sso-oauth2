@@ -82,7 +82,7 @@ public class LoginFilter implements Filter{
             SortedMap<String, String> params = new TreeMap<String, String>();
             params.put("client_id", "123456789");
             params.put("response_type", "code");
-            params.put("redirect_uri", "");
+            params.put("redirect_uri", CLIENT_HOST_URL);
             params.put("code", code);
             params.put("session_type", "JSESSIONID");
             params.put("session_id", session.getId());
@@ -96,7 +96,7 @@ public class LoginFilter implements Filter{
                     .data("client_id", "123456789")
                     .data("sign", sign)
                     .data("response_type", "code")
-                    .data("redirect_uri", "")
+                    .data("redirect_uri", CLIENT_HOST_URL)
                     .data("code", code)
                     .data("log_out_url",CLIENT_HOST_URL+"/logOut")
                     .data("session_id",session.getId())
@@ -132,7 +132,9 @@ public class LoginFilter implements Filter{
         try {
             String redirectUrl = CLIENT_HOST_URL+req.getServletPath();
             StringBuilder url = new StringBuilder();
-            url.append(SSO_URL_PREFIX).append("/checkLogin?redirectUrl=").append(redirectUrl);
+            url.append(SSO_URL_PREFIX)
+                    .append("/checkLogin?success_redirectUrl=").append(redirectUrl)
+                    .append("&fail_redirectUrl=").append(redirectUrl+"login");
             res.sendRedirect(url.toString());
         }catch (Exception e){
             System.out.println("跳转失败");
