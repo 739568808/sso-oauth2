@@ -55,17 +55,17 @@ public class SSOServerController {
      * @return
      */
     @RequestMapping("/checkLogin")
-    public String checklogin(String redirectUrl, HttpSession session,RedirectAttributes redirectAttributes,HttpServletRequest request){
+    public String checklogin(String success_redirectUrl,String fail_redirectUrl, HttpSession session,RedirectAttributes redirectAttributes,HttpServletRequest request){
 
         //1、判断是否有全局的会话
         String code = (String) session.getAttribute("code");
         if (StringUtils.isEmpty(code)){
             //没有全局会话
-            return "redirect:"+redirectUrl+"login";
+            return "redirect:"+fail_redirectUrl;
         } else {
             //有全局会话
             redirectAttributes.addAttribute("code",code);
-            return "redirect:"+redirectUrl;
+            return "redirect:"+success_redirectUrl;
         }
     }
 
@@ -160,12 +160,18 @@ public class SSOServerController {
     @RequestMapping("/oauth/token")
     @ResponseBody
     public String verifyToken(OAuthToken oAuthToken,HttpSession session){
+        if (!this.cheakParam(oAuthToken)){
+            return ResultUtil.error(1000,"缺少请求参数");
+        }
         TbOauth2  oauth2 = oauth2Service.getOne(new QueryWrapper<TbOauth2>().eq("client_id", oAuthToken.getClient_id()).last(" limit 1"));
-        if (null == oauth2 || !oauth2.getClientSecret().equals(oauth2.getClientSecret())){
-            return ResultUtil.error(1001,"client_id或client_secret错误");
+        if (null == oauth2 ){
+            return ResultUtil.error(1001,"client_id错误");
+        }
+        if (!oauth2.getClientSecret().equals(oauth2.getClientSecret())){
+            return ResultUtil.error(1002,"client_secret错误");
         }
         if (StringUtils.isEmpty(oAuthToken.getSign())){
-            return ResultUtil.error(3010,"签名不允许为空");
+            return ResultUtil.error(3001,"签名校验失败");
         }
         if (!oAuthToken.getSign().equals(getSign(oAuthToken,oauth2.getClientSecret()))){
             return ResultUtil.error(3001,"签名校验失败");
@@ -174,11 +180,11 @@ public class SSOServerController {
         String codeKey = redisUtils.getSSOKey(ECODE.CODE.getName(), oAuthToken.getCode()+oAuthToken.getIp());
         String code = redisUtils.get(codeKey);
         if (StringUtils.isEmpty(code)){
-            return ResultUtil.error(2002,"code失效或不存在");
+            return ResultUtil.error(2001,"code失效或不存在");
         }
 
         if (!addClientInfo(oAuthToken)){
-            return ResultUtil.error(2001,"系统异常");
+            return ResultUtil.error(9001,"系统异常");
         }
         //refresh_token
         String refresh_token = UUID.randomUUID().toString();
@@ -197,6 +203,27 @@ public class SSOServerController {
     }
 
     /**
+     * 请求参数非空校验
+     * @param oAuthToken
+     * @return
+     */
+    private boolean cheakParam(OAuthToken oAuthToken) {
+        if (StringUtils.isEmpty(oAuthToken.getIp())
+        ||StringUtils.isEmpty(oAuthToken.getClient_id())
+        ||StringUtils.isEmpty(oAuthToken.getCode())
+        ||StringUtils.isEmpty(oAuthToken.getLog_out_url())
+        ||StringUtils.isEmpty(oAuthToken.getSession_type())
+        ||StringUtils.isEmpty(oAuthToken.getSession_id())
+        ||StringUtils.isEmpty(oAuthToken.getSign())
+        ||StringUtils.isEmpty(oAuthToken.getRedirect_uri())
+        ||StringUtils.isEmpty(oAuthToken.getResponse_type())
+        ){
+            return false;
+        }
+        return true;
+    }
+
+    /**
      * 刷新access_token
      * @param client_id
      * @param refresh_token
@@ -206,14 +233,14 @@ public class SSOServerController {
     @ResponseBody
     public String refresh_access_token(String client_id,String refresh_token){
         if (StringUtils.isEmpty(client_id)||StringUtils.isEmpty(refresh_token)){
-            return ResultUtil.error("缺少请求参数");
+            return ResultUtil.error(1000,"缺少请求参数");
         }
 
         StringBuilder refresh_token_sb = new StringBuilder();
         refresh_token_sb.append("refresh_token").append(":").append(client_id).append(":").append(refresh_token);
         String userStr = redisUtils.get(refresh_token_sb.toString());
         if (StringUtils.isEmpty(userStr)){
-            return ResultUtil.error("refresh_token过期,请重新授权登录");
+            return ResultUtil.error(4002,"refresh_token过期,请重新授权登录");
         }
         String access_token = UUID.randomUUID().toString();
         StringBuilder access_token_sb = new StringBuilder();
@@ -249,14 +276,14 @@ public class SSOServerController {
     @ResponseBody
     public String user(String client_id,String access_token){
         if (StringUtils.isEmpty(client_id)||StringUtils.isEmpty(access_token)){
-            return ResultUtil.error(1001,"缺少请求参数");
+            return ResultUtil.error(1000,"缺少请求参数");
         }
 
         StringBuilder access_token_sb = new StringBuilder();
         access_token_sb.append("access_token").append(":").append(client_id).append(":").append(access_token);
         String res = redisUtils.get(access_token_sb.toString());
         if (StringUtils.isEmpty(res)){
-            return ResultUtil.error(1002,"access_token过期，请刷新refresh_token或重新登录");
+            return ResultUtil.error(4001,"access_token过期，请刷新refresh_token或重新登录");
         }
         JSONObject jsonObject = JSONObject.parseObject(res);
         return ResultUtil.success(jsonObject);
