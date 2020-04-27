@@ -260,8 +260,18 @@ public class SSOServerController {
      */
     @RequestMapping("/logOut")
     public String logOut(String redirectUrl,HttpSession session,HttpServletRequest request){
+
+
+        //删除缓存中的code
+        String code = (String)session.getAttribute("code");
+
+        String key = redisUtils.getSSOKey(ECODE.CODE.getName(), code+IpUtil.getIpAddress(request));
+        //授权码code默认保存15分钟,保存用户登录信息
+        redisUtils.del(key);
+
         //销毁全局会话
         session.invalidate();
+
         return "redirect:"+redirectUrl;
     }
 

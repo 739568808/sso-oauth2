@@ -28,7 +28,7 @@ public class SessionListener implements HttpSessionListener {
         HttpSession session = se.getSession();
         String code = (String)session.getAttribute("code");
         //删除t_token表中的数据
-        String tokenKey = redisUtils.getSSOKey(ECODE.CODE.getName(), code);
+        //String tokenKey = redisUtils.getSSOKey(ECODE.CODE.getName(), code);
         String tokenClientInfoKey = redisUtils.getSSOKey(ECODE.CODE_CLIENT_INFO.getName(), code);
 
         String tokenClientInfoStr = redisUtils.get(tokenClientInfoKey);
@@ -43,7 +43,7 @@ public class SessionListener implements HttpSessionListener {
                 }
             }
         }
-        redisUtils.del(tokenKey);
+       // redisUtils.del(tokenKey);
         redisUtils.del(tokenClientInfoKey);
     }
 
