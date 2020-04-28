@@ -34,8 +34,7 @@ import java.util.stream.Collectors;
 @Controller
 public class SSOServerController {
 
-    @Value("${code_timeout}")
-    private String code_timeout;
+
     @Value("${refresh_token_timeout}")
     private String refresh_token_timeout;
     @Value("${access_token_timeout}")
@@ -97,7 +96,7 @@ public class SSOServerController {
 
             //3、将令牌信息放入数据库中（redis中）
             String key = redisUtils.getSSOKey(ECODE.CODE.getName(), token);
-            redisUtils.set(key,token,Long.valueOf(code_timeout), TimeUnit.DAYS);
+            redisUtils.set(key,token,Long.valueOf(refresh_token_timeout), TimeUnit.DAYS);
             //MockDatabaseUtil.T_TOKEN.add(token);
             //4、重定向到redirectUrl，并且把令牌信息带上
             redirectAttributes.addAttribute("token",token);
@@ -144,7 +143,7 @@ public class SSOServerController {
             //3、将令牌信息放入数据库中（redis中）
             String key = redisUtils.getSSOKey(ECODE.CODE.getName(), code+IpUtil.getIpAddress(request));
            //授权码code默认保存15分钟,保存用户登录信息
-            redisUtils.set(key,code,Long.valueOf(code_timeout), TimeUnit.MINUTES);
+            redisUtils.set(key,code,Long.valueOf(refresh_token_timeout), TimeUnit.MINUTES);
 
             return ResultUtil.success(code);
         }

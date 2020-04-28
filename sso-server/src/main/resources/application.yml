@@ -37,5 +37,4 @@ mybatis-plus:
 access_token_timeout: 7200  #秒
 #refresh_token过期时间
 refresh_token_timeout: 30 #天
-#授权码过期时间
-code_timeout: 15 #分钟
+
