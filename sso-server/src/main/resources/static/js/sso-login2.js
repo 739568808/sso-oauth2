@@ -5,18 +5,18 @@ var gameid = document.getElementById('login').getAttribute('gameid');
 var response_type = document.getElementById('login').getAttribute('response_type');
 var scope = document.getElementById('login').getAttribute('scope');
 var state = document.getElementById('login').getAttribute('state');
-var htmml = "<form id='sso-login-form' method='post' action=\""+passportUrl+"/login2\">\n" +
+var htmml = "<div id='login-box' style='width: 200px;height: 150px;background: #e8e8e8;margin: 0 auto;margin-top: 200px;padding: 30px;box-shadow: 10px 10px 5px #888888;'><form id='sso-login-form' method='post' action=\""+passportUrl+"/login2\">\n" +
     "    <input type='hidden' name='redirectUrl' value="+redirectUrl+">\n" +
     "    <input type='hidden' name='game_id' value="+gameid+">\n" +
     "    <input type='hidden' name='client_id' value="+client_id+">\n" +
     "    <input type='hidden' name='response_type' value="+response_type+">\n" +
     "    <input type='hidden' name='scope' value="+scope+">\n" +
     "    <input type='hidden' name='state' value="+state+">\n" +
-    "    <div>游戏类型：<span id='gameName'></span></div>\n"+
-    "    <label>账户</label><input id='username' type='text' name='username'>\n" +
-    "    <label>密码</label><input id='password' type='password' name='password'>\n" +
-    "    <input type='button' value='登录' onclick='login()'>\n" +
-    "</form>";
+    "    <div>游戏类型：<span id='gameName'></span></div><br/>\n"+
+    "    <label>账号 </label><input id='username' type='text' name='username'><br/><br/>\n" +
+    "    <label>密码 </label><input id='password' type='password' name='password'><br/><br/>\n" +
+    "   <div style='margin: 0 auto;text-align: center'> <input type='button' value='登录' onclick='login()'></div>\n" +
+    "</form></div>";
 
 
 var errMsg = getQueryVariable("errMsg");

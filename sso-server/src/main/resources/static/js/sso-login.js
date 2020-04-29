@@ -5,7 +5,7 @@ var gameid = document.getElementById('login').getAttribute('gameid');
 var response_type = document.getElementById('login').getAttribute('response_type');
 var scope = document.getElementById('login').getAttribute('scope');
 var state = document.getElementById('login').getAttribute('state');
-var loginHtml = "<form id='sso-login-form' method=\"post\" action=\""+passportUrl+"/login\">\n" +
+var loginHtml = "<div id='login-box'><form id='sso-login-form' method=\"post\" action=\""+passportUrl+"/login\">\n" +
     "    <input type=\"hidden\" name=\"redirect_url\" value="+redirectUrl+">\n" +
     "    <input type=\"hidden\" name=\"game_id\" value="+gameid+">\n" +
     "    <input type=\"hidden\" name=\"client_id\" value="+client_id+">\n" +
@@ -16,7 +16,7 @@ var loginHtml = "<form id='sso-login-form' method=\"post\" action=\""+passportUr
     "    <label>账户</label><input type=\"text\" name=\"username\">\n" +
     "    <label>密码</label><input type=\"password\" name=\"password\">\n" +
     "    <input type=\"submit\" value=\"登录\">\n" +
-    "</form>";
+    "</form></div>";
 
 
 var errMsg = getQueryVariable("errMsg");
