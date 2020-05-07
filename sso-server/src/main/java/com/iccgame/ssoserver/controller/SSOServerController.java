@@ -79,7 +79,7 @@ public class SSOServerController {
      * @param request
      * @return
      */
-    @RequestMapping("/login")
+    /*@RequestMapping("/login")
     public String login(String username, String password,String gameid, String redirectUrl, HttpSession session, RedirectAttributes redirectAttributes, HttpServletRequest request){
         //如果回调地址是空，则取referer
         redirectUrl = StringUtils.isEmpty(redirectUrl)?request.getHeader("referer"):redirectUrl;
@@ -110,7 +110,7 @@ public class SSOServerController {
         redirectAttributes.addAttribute("errMsg","Wrong account or password");
         String referer = request.getHeader("referer");
         return "redirect:"+redirectUrl;
-    }
+    }*/
 
     /**
      * 登录授权
@@ -120,9 +120,9 @@ public class SSOServerController {
      * @param request
      * @return
      */
-    @PostMapping("/login2")
+    @PostMapping("/login")
     @ResponseBody
-    public String login2(Login login, HttpSession session, RedirectAttributes redirectAttributes, HttpServletRequest request){
+    public String login(Login login, HttpSession session, RedirectAttributes redirectAttributes, HttpServletRequest request){
 
         TbOauth2  oauth2 = oauth2Service.getOne(new QueryWrapper<TbOauth2>().eq("client_id", login.getClient_id()).last(" limit 1"));
         if (null == oauth2){
@@ -305,28 +305,15 @@ public class SSOServerController {
      */
     @RequestMapping("/getGameType")
     @ResponseBody
-    public String getGameType(Integer gameid){
-        List<Map<String ,Object>> games = new ArrayList<>();
-        Map<String,Object> gameMap1 = new HashMap<>();
-        gameMap1.put("gameid",1);
-        gameMap1.put("gameName","破天一剑");
-        games.add(gameMap1);
-
-        Map<String,Object> gameMap2 = new HashMap<>();
-        gameMap2.put("gameid",2);
-        gameMap2.put("gameName","骑士3");
-        games.add(gameMap2);
-
-
-        if (CollectionUtils.isEmpty(games)){
+    public String getGameType(String clientId){
+        if (StringUtils.isEmpty(clientId)){
+            return ResultUtil.error("平台类型不允许为空");
+        }
+        TbOauth2  oauth2 = oauth2Service.getOne(new QueryWrapper<TbOauth2>().eq("client_id", clientId).last(" limit 1"));
+        if (null==oauth2){
             return ResultUtil.error("没有获取到游戏类型");
         }
-        for (Map<String,Object> map :games){
-            if (gameid==(Integer) map.get("gameid")){
-                return ResultUtil.success(map);
-            }
-        }
-        return ResultUtil.error("没有获取到游戏类型");
+        return ResultUtil.success(oauth2.getClientName());
     }
 
     /**

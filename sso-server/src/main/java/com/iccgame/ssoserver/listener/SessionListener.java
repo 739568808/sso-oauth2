@@ -2,7 +2,6 @@ package com.iccgame.ssoserver.listener;
 
 import com.alibaba.fastjson.JSON;
 import com.iccgame.ssoserver.enums.ECODE;
-import com.iccgame.ssoserver.util.MockDatabaseUtil;
 import com.iccgame.ssoserver.util.RedisUtils;
 import com.iccgame.ssoserver.vo.ClientInfoVo;
 import org.jsoup.Connection;
