@@ -50,10 +50,7 @@ public class SSOServerController {
      * @return
      */
     @GetMapping("/checkLogin")
-    public String checklogin(String success_redirectUrl,
-                             String fail_redirectUrl, HttpSession session, RedirectAttributes redirectAttributes, HttpServletRequest request){
-
-
+    public String checklogin(String success_redirectUrl, String fail_redirectUrl, HttpSession session, RedirectAttributes redirectAttributes, HttpServletRequest request){
         //1、判断是否有全局的会话
         String code = (String) session.getAttribute("code");
         if (StringUtils.isEmpty(code)){
