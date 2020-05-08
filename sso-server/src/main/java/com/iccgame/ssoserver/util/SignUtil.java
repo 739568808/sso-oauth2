@@ -2,6 +2,8 @@ package com.iccgame.ssoserver.util;
 
 import org.apache.commons.codec.digest.DigestUtils;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Iterator;
@@ -17,7 +19,7 @@ import java.util.TreeMap;
  */
 public class SignUtil {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws UnsupportedEncodingException {
 //        //sign();
 //        SortedMap<String, String> params = new TreeMap<String, String>();
 //        params.put("client_id", "123456789");
@@ -29,7 +31,8 @@ public class SignUtil {
 //        params.put("log_out_url", "/logOut");
 //        params.put("client_secret","123456789123456789");
 //        String sign = sign(params);
-        System.out.println(md5("123456"));
+//        System.out.println(md5("123456"));
+        System.out.println(URLEncoder.encode("http://192.168.0.141:8080/#/view","UTF-8"));
     }
 
     /**
@@ -83,23 +86,28 @@ public class SignUtil {
 
     }
 
-    public static String sign(SortedMap<String,String> map){
-        StringBuffer sb = new StringBuffer();
-        Iterator it = map.entrySet().iterator();
+    public static String sign(SortedMap<String,String> map) {
 
-        while (it.hasNext()) {
-            Map.Entry entry = (Map.Entry) it.next();
-            String k = (String) entry.getKey();
-            Object v = entry.getValue();
-            //空值不传递，不参与签名组串
-            if (null != v && !"".equals(v)) {
-                sb.append(k + "=" + v + "&");
+
+            StringBuffer sb = new StringBuffer();
+            Iterator it = map.entrySet().iterator();
+
+            while (it.hasNext()) {
+                Map.Entry entry = (Map.Entry) it.next();
+                String k = (String) entry.getKey();
+                Object v = entry.getValue();
+                //空值不传递，不参与签名组串
+                if (null != v && !"".equals(v)) {
+                    sb.append(k + "=" + v + "&");
+                }
             }
-        }
 
-        String param = sb.toString().substring(0,sb.toString().length() - 1);
-        System.out.println("加密前："+param);
-        System.out.println("加密后："+md5(param));
-        return md5(param);
+            String param = sb.toString().substring(0, sb.toString().length() - 1);
+            //编码
+            System.out.println("加密前：" + param);
+            System.out.println("加密后：" + md5(param));
+            return md5(param);
+
+
     }
 }

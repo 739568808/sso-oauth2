@@ -51,7 +51,7 @@ var SSO_Ajax = {
         var xhr = new XMLHttpRequest();
         xhr.open("POST", url, true);
         // 添加http头，发送信息至服务器时内容编码类型
-        xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+        xhr.setRequestHeader("Content-Type", "application/json");
         //支持跨域发送cookies
         xhr.withCredentials = true;
 
@@ -61,7 +61,7 @@ var SSO_Ajax = {
             }
         };
         //发送数据
-        xhr.send(data);
+        xhr.send(JSON.stringify(data));
     }
 }
 /**
@@ -104,8 +104,13 @@ function login(){
         alert("参数异常");
         return;
     }
-    var param = "redirectUrl="+redirectUrl+"&email="+email+"&password="+password+"&client_id="+client_id+"&response_type="+response_type+"&scope="+scope+"&state="+state
-    /*SSO_Ajax.post(passportUrl+"/login",param,function (data) {
+    var param = {"redirectUrl":redirectUrl,
+        "email":email,
+        "password":password,
+        "client_id":client_id,
+        "response_type":response_type,"scope":scope,"state":state}
+   // var param = "redirectUrl="+redirectUrl+"&email="+email+"&password="+password+"&client_id="+client_id+"&response_type="+response_type+"&scope="+scope+"&state="+state
+    SSO_Ajax.post(passportUrl+"/login",param,function (data) {
         var obj = JSON.parse(data);
         //TODO  请求游戏类型
         if (obj.code==200){
@@ -114,7 +119,8 @@ function login(){
             alert(obj.msg);
             return;
         }
-    })*/
+    })
+
 
 
 }

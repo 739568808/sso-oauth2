@@ -15,14 +15,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -49,8 +49,10 @@ public class SSOServerController {
      * @param redirectAttributes
      * @return
      */
-    @RequestMapping("/checkLogin")
-    public String checklogin(String success_redirectUrl,String fail_redirectUrl, HttpSession session,RedirectAttributes redirectAttributes,HttpServletRequest request){
+    @GetMapping("/checkLogin")
+    public String checklogin(String success_redirectUrl,
+                             String fail_redirectUrl, HttpSession session, RedirectAttributes redirectAttributes, HttpServletRequest request){
+
 
         //1、判断是否有全局的会话
         String code = (String) session.getAttribute("code");
@@ -118,8 +120,7 @@ public class SSOServerController {
      */
     @PostMapping("/login")
     @ResponseBody
-    public String login(@RequestBody Login login, HttpSession session, RedirectAttributes redirectAttributes, HttpServletRequest request){
-
+    public String ajaxLogin(@RequestBody Login login, HttpSession session, RedirectAttributes redirectAttributes, HttpServletRequest request){
         SsoPlatform platform = ssoPlatformService.getOne(new QueryWrapper<SsoPlatform>().eq("client_id", login.getClient_id()).last(" limit 1"));
         if (null == platform){
             return ResultUtil.error("未授权的客户端");
@@ -139,7 +140,7 @@ public class SSOServerController {
             session.setAttribute("code",code);
             //3、将令牌信息放入数据库中（redis中）
             String key = redisUtils.getSSOKey(ECODE.CODE.getName(), code+IpUtil.getIpAddress(request));
-           //授权码code默认保存15分钟,保存用户登录信息
+            //授权码code默认保存15分钟,保存用户登录信息
             redisUtils.set(key, JSON.toJSONString(user),Long.valueOf(refresh_token_timeout), TimeUnit.MINUTES);
 
             Map<String,String> map = new HashMap<String, String>();
@@ -148,6 +149,7 @@ public class SSOServerController {
         }
         return ResultUtil.error("账户名或密码错误");
     }
+
 
     
     /**
@@ -322,18 +324,24 @@ public class SSOServerController {
      * @return
      */
     private String getSign(OAuthToken oAuthToken,String client_secret){
-        SortedMap<String, String> params = new TreeMap<String, String>();
-        params.put("client_id", oAuthToken.getClient_id());
-        params.put("response_type", oAuthToken.getResponse_type());
-        params.put("redirect_uri", oAuthToken.getRedirect_uri());
-        params.put("code", oAuthToken.getCode());
-        params.put("session_type", oAuthToken.getSession_type());
-        params.put("session_id", oAuthToken.getSession_id());
-        params.put("log_out_url", oAuthToken.getLog_out_url());
-        params.put("client_secret",client_secret);
-        params.put("ip",oAuthToken.getIp());
-        String sign = SignUtil.sign(params);
-        return  sign;
+
+        try {
+            SortedMap<String, String> params = new TreeMap<String, String>();
+            params.put("client_id", oAuthToken.getClient_id());
+            params.put("response_type", oAuthToken.getResponse_type());
+            params.put("redirect_uri", URLEncoder.encode(oAuthToken.getRedirect_uri(), "UTF-8"));
+            params.put("code", oAuthToken.getCode());
+            params.put("session_type", oAuthToken.getSession_type());
+            params.put("session_id", oAuthToken.getSession_id());
+            params.put("log_out_url", URLEncoder.encode(oAuthToken.getLog_out_url(), "UTF-8"));
+            params.put("client_secret",client_secret);
+            params.put("ip",oAuthToken.getIp());
+            String sign = SignUtil.sign(params);
+            return  sign;
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
 
