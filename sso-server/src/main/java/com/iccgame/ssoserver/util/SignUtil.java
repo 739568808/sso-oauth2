@@ -2,6 +2,8 @@ package com.iccgame.ssoserver.util;
 
 import org.apache.commons.codec.digest.DigestUtils;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.SortedMap;
@@ -16,24 +18,69 @@ import java.util.TreeMap;
 public class SignUtil {
 
     public static void main(String[] args) {
-        //sign();
-        SortedMap<String, String> params = new TreeMap<String, String>();
-        params.put("client_id", "123456789");
-        params.put("response_type", "code");
-        params.put("redirect_uri", "");
-        params.put("code", "code");
-        params.put("session_type", "JSESSIONID");
-        params.put("sessionid", "sessionid");
-        params.put("log_out_url", "/logOut");
-        params.put("client_secret","123456789123456789");
-        String sign = sign(params);
+//        //sign();
+//        SortedMap<String, String> params = new TreeMap<String, String>();
+//        params.put("client_id", "123456789");
+//        params.put("response_type", "code");
+//        params.put("redirect_uri", "");
+//        params.put("code", "code");
+//        params.put("session_type", "JSESSIONID");
+//        params.put("sessionid", "sessionid");
+//        params.put("log_out_url", "/logOut");
+//        params.put("client_secret","123456789123456789");
+//        String sign = sign(params);
+        System.out.println(md5("123456"));
+    }
 
+    /**
+     * @param input 输入
+     * @return 返回16个字节
+     * @throws Exception
+     */
+
+    public static byte[] originMD5(byte[] input) throws Exception {
+        MessageDigest md5 = MessageDigest.getInstance("MD5");
+        byte[] out = md5.digest(input);
+        return out;
+    }
+
+    /**
+     * @param input 输入
+     * @return 返回16个字节
+     * @throws Exception
+     */
+    public static String MD5(byte[] input) throws Exception {
+        String str = new String(input, 0, input.length);
+        //创建MD5加密对象
+        MessageDigest md5 = MessageDigest.getInstance("MD5");
+        // 进行加密
+        md5.update(str.getBytes());
+        //获取加密后的字节数组
+        byte[] md5Bytes = md5.digest();
+        String res = "";
+        for (int i = 0; i < md5Bytes.length; i++) {
+            int temp = md5Bytes[i] & 0xFF;
+            // 转化成十六进制不够两位，前面加零
+            if (temp <= 0XF) {
+                res += "0";
+            }
+            res += Integer.toHexString(temp);
+        }
+        String strMd5Key = new String(res.getBytes(), 0, res.getBytes().length);
+        return strMd5Key;
     }
 
 
-    public static String md5(String res){
-        //加密后的字符串
-        return DigestUtils.md5Hex(res);
+
+    public static String md5(String str) {
+        try {
+            return MD5(str.getBytes());
+            //加密后的字符串
+            //return DigestUtils.md5Hex(str);
+        }catch (Exception E){
+            return null;
+        }
+
     }
 
     public static String sign(SortedMap<String,String> map){
@@ -49,9 +96,10 @@ public class SignUtil {
                 sb.append(k + "=" + v + "&");
             }
         }
+
         String param = sb.toString().substring(0,sb.toString().length() - 1);
-//        System.out.println("加密前："+param);
-//        System.out.println("加密后："+md5(param));
+        System.out.println("加密前："+param);
+        System.out.println("加密后："+md5(param));
         return md5(param);
     }
 }

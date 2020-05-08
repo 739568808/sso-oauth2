@@ -15,18 +15,21 @@ import lombok.experimental.Accessors;
  * </p>
  *
  * @author lihuiyang
- * @since 2020-04-20
+ * @since 2020-05-07
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-public class TbOauth2 extends Model<TbOauth2> {
+public class SsoPlatform extends Model<SsoPlatform> {
 
     private static final long serialVersionUID = 1L;
 
     @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
 
+    /**
+     * 游戏类型id--可以和现有的游戏类型表关联
+     */
     private Integer gameId;
 
     /**
@@ -60,7 +63,7 @@ public class TbOauth2 extends Model<TbOauth2> {
     private String remark;
 
     /**
-     * 状态/是否启用
+     * 0启用  1禁用
      */
     private Boolean flag;
 

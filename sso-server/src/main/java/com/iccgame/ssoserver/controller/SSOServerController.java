@@ -1,35 +1,30 @@
 package com.iccgame.ssoserver.controller;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.iccgame.ssoserver.domain.entity.TbOauth2;
+import com.iccgame.ssoserver.domain.entity.SsoPlatform;
+import com.iccgame.ssoserver.domain.entity.SsoUser;
 import com.iccgame.ssoserver.enums.ECODE;
-import com.iccgame.ssoserver.service.TbOauth2Service;
+import com.iccgame.ssoserver.service.SsoPlatformService;
+import com.iccgame.ssoserver.service.SsoUserService;
 import com.iccgame.ssoserver.util.*;
 import com.iccgame.ssoserver.vo.*;
-import net.sf.jsqlparser.expression.JsonExpression;
-import org.jsoup.Connection;
-import org.jsoup.Jsoup;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
-import java.io.IOException;
-import java.text.ParseException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 @Controller
 public class SSOServerController {
@@ -41,8 +36,9 @@ public class SSOServerController {
     private String access_token_timeout;
 
     @Autowired
-    private TbOauth2Service oauth2Service;
-
+    private SsoPlatformService ssoPlatformService;
+    @Autowired
+    private SsoUserService ssoUserService;
     @Autowired
     private RedisUtils redisUtils;
 
@@ -122,30 +118,33 @@ public class SSOServerController {
      */
     @PostMapping("/login")
     @ResponseBody
-    public String login(Login login, HttpSession session, RedirectAttributes redirectAttributes, HttpServletRequest request){
+    public String login(@RequestBody Login login, HttpSession session, RedirectAttributes redirectAttributes, HttpServletRequest request){
 
-        TbOauth2  oauth2 = oauth2Service.getOne(new QueryWrapper<TbOauth2>().eq("client_id", login.getClient_id()).last(" limit 1"));
-        if (null == oauth2){
+        SsoPlatform platform = ssoPlatformService.getOne(new QueryWrapper<SsoPlatform>().eq("client_id", login.getClient_id()).last(" limit 1"));
+        if (null == platform){
             return ResultUtil.error("未授权的客户端");
         }
 
-        //TODO user信息填充
-        User user = new User("1","admin","男",26);
-        if ("admin".equals(login.getUsername()) && "123456".equals(login.getPassword())){
+        SsoUser user = ssoUserService.getOne(new QueryWrapper<SsoUser>().eq("email", login.getEmail()).last(" limit 1"));
+
+        if (null == user){
+            return ResultUtil.error("邮箱不存在");
+        }
+
+        if (user.getEmail().equals(user.getEmail()) && user.getPassword().equals(SignUtil.md5(login.getPassword()))){
             //1、创建授权码
             String code = UUID.randomUUID().toString();
             //String code = MI.encoder(JSON.toJSONString(user));
-
             //2、创建全局会话，将令牌放入会话中
-
             session.setAttribute("code",code);
-
             //3、将令牌信息放入数据库中（redis中）
             String key = redisUtils.getSSOKey(ECODE.CODE.getName(), code+IpUtil.getIpAddress(request));
            //授权码code默认保存15分钟,保存用户登录信息
-            redisUtils.set(key,code,Long.valueOf(refresh_token_timeout), TimeUnit.MINUTES);
+            redisUtils.set(key, JSON.toJSONString(user),Long.valueOf(refresh_token_timeout), TimeUnit.MINUTES);
 
-            return ResultUtil.success(code);
+            Map<String,String> map = new HashMap<String, String>();
+            map.put("code",code);
+            return ResultUtil.success(map);
         }
         return ResultUtil.error("账户名或密码错误");
     }
@@ -162,7 +161,7 @@ public class SSOServerController {
         if (!this.cheakParam(oAuthToken)){
             return ResultUtil.error(1000,"缺少请求参数");
         }
-        TbOauth2  oauth2 = oauth2Service.getOne(new QueryWrapper<TbOauth2>().eq("client_id", oAuthToken.getClient_id()).last(" limit 1"));
+        SsoPlatform  oauth2 = ssoPlatformService.getOne(new QueryWrapper<SsoPlatform>().eq("client_id", oAuthToken.getClient_id()).last(" limit 1"));
         if (null == oauth2 ){
             return ResultUtil.error(1001,"client_id错误");
         }
@@ -198,7 +197,7 @@ public class SSOServerController {
         //
         //if (redisUtils.hasKey(codeKey)){redisUtils.del(codeKey);}
 
-        return ResultUtil.success(new Token(accessTokenObj.getString("data"),refresh_token,oAuthToken.getClient_id(),null));
+        return ResultUtil.success(new Token(accessTokenObj.getString("data"),refresh_token,oAuthToken.getClient_id(),JSON.parseObject(code)));
     }
 
     /**
@@ -309,7 +308,7 @@ public class SSOServerController {
         if (StringUtils.isEmpty(clientId)){
             return ResultUtil.error("平台类型不允许为空");
         }
-        TbOauth2  oauth2 = oauth2Service.getOne(new QueryWrapper<TbOauth2>().eq("client_id", clientId).last(" limit 1"));
+        SsoPlatform  oauth2 = ssoPlatformService.getOne(new QueryWrapper<SsoPlatform>().eq("client_id", clientId).last(" limit 1"));
         if (null==oauth2){
             return ResultUtil.error("没有获取到游戏类型");
         }

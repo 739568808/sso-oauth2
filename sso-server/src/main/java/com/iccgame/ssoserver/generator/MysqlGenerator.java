@@ -103,7 +103,7 @@ public class MysqlGenerator {
         // 设置逻辑删除键
         strategy.setLogicDeleteFieldName("deleted");
         // TODO 指定生成的bean的数据库表名
-        strategy.setInclude("tb_oauth2");
+        strategy.setInclude("sso_dept");
         //strategy.setSuperEntityColumns("id");
         // 驼峰转连字符
         strategy.setControllerMappingHyphenStyle(true);

@@ -1,6 +1,6 @@
 package com.iccgame.ssoserver.service;
 
-import com.iccgame.ssoserver.domain.entity.TbOauth2;
+import com.iccgame.ssoserver.domain.entity.SsoUser;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 /**
@@ -9,8 +9,8 @@ import com.baomidou.mybatisplus.extension.service.IService;
  * </p>
  *
  * @author lihuiyang
- * @since 2020-04-20
+ * @since 2020-05-07
  */
-public interface TbOauth2Service extends IService<TbOauth2> {
+public interface SsoUserService extends IService<SsoUser> {
 
 }

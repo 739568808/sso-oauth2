@@ -1,6 +1,6 @@
 package com.iccgame.ssoserver.mapper;
 
-import com.iccgame.ssoserver.domain.entity.TbOauth2;
+import com.iccgame.ssoserver.domain.entity.SsoPlatform;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 /**
@@ -9,8 +9,8 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  * </p>
  *
  * @author lihuiyang
- * @since 2020-04-20
+ * @since 2020-05-07
  */
-public interface TbOauth2Mapper extends BaseMapper<TbOauth2> {
+public interface SsoPlatformMapper extends BaseMapper<SsoPlatform> {
 
 }
