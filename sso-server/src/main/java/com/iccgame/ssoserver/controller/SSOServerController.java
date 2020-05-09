@@ -50,7 +50,7 @@ public class SSOServerController {
      * @return
      */
     @GetMapping("/checkLogin")
-    public String checklogin(String success_redirectUrl, String fail_redirectUrl, HttpSession session, RedirectAttributes redirectAttributes, HttpServletRequest request){
+    public String checklogin(String success_redirectUrl, String fail_redirectUrl, HttpSession session){
         //1、判断是否有全局的会话
         String code = (String) session.getAttribute("code");
         if (StringUtils.isEmpty(code)){
@@ -58,8 +58,9 @@ public class SSOServerController {
             return "redirect:"+fail_redirectUrl;
         } else {
             //有全局会话
-            redirectAttributes.addAttribute("code",code);
-            return "redirect:"+success_redirectUrl;
+            StringBuilder sb = new StringBuilder();
+            sb.append("redirect:").append(success_redirectUrl).append("?code=").append(code);
+            return sb.toString();
         }
     }
 
@@ -332,8 +333,7 @@ public class SSOServerController {
             params.put("session_id", oAuthToken.getSession_id());
             params.put("log_out_url", URLEncoder.encode(oAuthToken.getLog_out_url(), "UTF-8"));
             params.put("client_secret",client_secret);
-            params.put("ip",oAuthToken.getIp());
-            String sign = SignUtil.sign(params);
+            params.put("ip",oAuthToken.getIp());String sign = SignUtil.sign(params);
             return  sign;
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();

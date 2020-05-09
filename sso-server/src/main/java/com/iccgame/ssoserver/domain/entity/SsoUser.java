@@ -15,7 +15,7 @@ import lombok.experimental.Accessors;
  * </p>
  *
  * @author lihuiyang
- * @since 2020-05-07
+ * @since 2020-05-08
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
@@ -52,7 +52,7 @@ public class SsoUser extends Model<SsoUser> {
     /**
      * 部门
      */
-    private Integer dept;
+    private Integer deptId;
 
     /**
      * 职位

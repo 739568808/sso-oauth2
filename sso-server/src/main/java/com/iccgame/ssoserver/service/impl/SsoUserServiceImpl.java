@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
  * </p>
  *
  * @author lihuiyang
- * @since 2020-05-07
+ * @since 2020-05-08
  */
 @Service
 public class SsoUserServiceImpl extends ServiceImpl<SsoUserMapper, SsoUser> implements SsoUserService {

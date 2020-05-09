@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.iccgame.ssoserver.enums.ECODE;
 import com.iccgame.ssoserver.util.RedisUtils;
 import com.iccgame.ssoserver.vo.ClientInfoVo;
+import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +17,7 @@ import javax.servlet.http.HttpSessionListener;
 import java.io.IOException;
 import java.util.List;
 @Component
+@Slf4j
 public class SessionListener implements HttpSessionListener {
 
     @Autowired
@@ -36,6 +38,7 @@ public class SessionListener implements HttpSessionListener {
             //获取出注册的子系统，依次调用子系统的登出方法
             for (ClientInfoVo vo:clientInfoList){
                 try {
+                    log.info("销毁session:{}", JSON.toJSON(vo));
                     sendHttpRequset(vo.getLogOutUrl(),vo.getSessionid(),vo.getSessionType());
                 }catch (Exception e){
                     e.printStackTrace();
@@ -51,7 +54,8 @@ public class SessionListener implements HttpSessionListener {
             Connection.Response response = Jsoup.connect(url)
                     //.header("Cookie", "JSESSIONID=" + jsessionid)
                     .header("Cookie", sessionType+"=" + sessionid)
-                    .method(Connection.Method.POST).execute();
+                    .ignoreContentType(true)
+                    .method(Connection.Method.GET).execute();
         }catch (IOException e){
             e.printStackTrace();
         }

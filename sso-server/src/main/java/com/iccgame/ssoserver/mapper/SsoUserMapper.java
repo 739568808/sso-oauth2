@@ -9,7 +9,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  * </p>
  *
  * @author lihuiyang
- * @since 2020-05-07
+ * @since 2020-05-08
  */
 public interface SsoUserMapper extends BaseMapper<SsoUser> {
 
