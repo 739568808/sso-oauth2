@@ -36,5 +36,3 @@ mybatis-plus:
 access_token_timeout: 7200  #秒
 #refresh_token过期时间
 refresh_token_timeout: 30 #天
-
-passportUrl: http://192.168.0.221:8091
