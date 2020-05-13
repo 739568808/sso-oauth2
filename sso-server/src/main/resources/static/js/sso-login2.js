@@ -1,4 +1,4 @@
-var passportUrl = "http://www.sso.com:8080";//认证中心地址
+var passportUrl = "http://www.sso.com:8091";//认证中心地址
 var redirectUrl = document.getElementById('login').getAttribute('redirectUrl');
 var client_id = document.getElementById('login').getAttribute('client_id');
 var gameid = document.getElementById('login').getAttribute('gameid');

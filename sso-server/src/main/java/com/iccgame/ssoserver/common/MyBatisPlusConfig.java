@@ -38,7 +38,7 @@ public class MyBatisPlusConfig {
      * @return: com.baomidou.mybatisplus.extension.plugins.PerformanceInterceptor
      */
     @Bean
-    @Profile({"test"})// 设置 dev test 环境开启
+    @Profile({"test","dev"})// 设置 dev test 环境开启
     public PerformanceInterceptor performanceInterceptor() {
         return new PerformanceInterceptor();
     }

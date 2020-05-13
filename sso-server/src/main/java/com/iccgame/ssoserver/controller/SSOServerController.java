@@ -50,7 +50,7 @@ public class SSOServerController {
      * @return
      */
     @GetMapping("/checkLogin")
-    public String checklogin(String success_redirectUrl, String fail_redirectUrl, HttpSession session){
+    public String checklogin(String success_redirectUrl, String fail_redirectUrl, HttpSession session,HttpServletRequest request){
         //1、判断是否有全局的会话
         String code = (String) session.getAttribute("code");
         if (StringUtils.isEmpty(code)){
@@ -333,7 +333,8 @@ public class SSOServerController {
             params.put("session_id", oAuthToken.getSession_id());
             params.put("log_out_url", URLEncoder.encode(oAuthToken.getLog_out_url(), "UTF-8"));
             params.put("client_secret",client_secret);
-            params.put("ip",oAuthToken.getIp());String sign = SignUtil.sign(params);
+            params.put("ip",oAuthToken.getIp());
+            String sign = SignUtil.sign(params);
             return  sign;
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();

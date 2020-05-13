@@ -1,0 +1,40 @@
+server:
+  port: 8091
+spring:
+  datasource:
+    druid:
+      driverClassName: com.mysql.jdbc.Driver
+      #url: jdbc:mysql://172.21.0.9:3306/tools?useUnicode=yes&characterEncoding=UTF-8&useSSL=false
+      url: jdbc:mysql://192.168.0.221:3306/test_admin?useUnicode=yes&characterEncoding=UTF-8&useSSL=false&serverTimezone=UTC
+      username: test_admin
+      password: test_admin!@#456
+      maxActive: 50
+      minIdle: 5
+  redis:
+    host: 192.168.0.221
+    port: 6379
+    password:
+    max-idle: 20
+    max-total: 100
+    max-wait-millis: 3000
+
+
+mybatis-plus:
+  global-config:
+    db-config:
+      id-type: auto
+      field-strategy: not_empty
+      table-underline: true
+      db-type: mysql
+      logic-delete-value: 1 # 逻辑已删除值(默认为 1)
+      logic-not-delete-value: 0 # 逻辑未删除值(默认为 0)
+  mapper-locations: classpath:/mapper/*.xml
+
+
+
+#access_token过期时间
+access_token_timeout: 7200  #秒
+#refresh_token过期时间
+refresh_token_timeout: 30 #天
+
+passportUrl: http://192.168.0.221:8091
