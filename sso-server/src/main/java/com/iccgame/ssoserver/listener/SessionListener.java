@@ -25,7 +25,7 @@ public class SessionListener implements HttpSessionListener {
 
     @Override
     public void sessionDestroyed(HttpSessionEvent se) {
-        System.out.println("触发了session销毁事件......");
+        //System.out.println("触发了session销毁事件......");
         HttpSession session = se.getSession();
         String code = (String)session.getAttribute("code");
         //删除t_token表中的数据
