@@ -3,6 +3,7 @@ package com.iccgame.ssoserver.controller;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.iccgame.ssoserver.common.Constant;
 import com.iccgame.ssoserver.domain.entity.SsoPlatform;
 import com.iccgame.ssoserver.domain.entity.SsoUser;
 import com.iccgame.ssoserver.enums.ECODE;
@@ -35,6 +36,7 @@ public class SSOServerController {
     @Value("${access_token_timeout}")
     private String access_token_timeout;
 
+
     @Autowired
     private SsoPlatformService ssoPlatformService;
     @Autowired
@@ -52,7 +54,7 @@ public class SSOServerController {
     @GetMapping("/checkLogin")
     public String checklogin(String success_redirectUrl, String fail_redirectUrl, HttpSession session,HttpServletRequest request){
         //1、判断是否有全局的会话
-        String code = (String) session.getAttribute("code");
+        String code = (String) session.getAttribute(Constant.CODE);
         if (StringUtils.isEmpty(code)){
             //没有全局会话
             return "redirect:"+fail_redirectUrl;
@@ -135,7 +137,7 @@ public class SSOServerController {
             String code = UUID.randomUUID().toString();
             //String code = MI.encoder(JSON.toJSONString(user));
             //2、创建全局会话，将令牌放入会话中
-            session.setAttribute("code",code);
+            session.setAttribute(Constant.CODE,code);
             //3、将令牌信息放入数据库中（redis中）
             String key = redisUtils.getSSOKey(ECODE.CODE.getName(), code+IpUtil.getIpAddress(request));
             //授权码code默认保存15分钟,保存用户登录信息
@@ -261,7 +263,7 @@ public class SSOServerController {
 
 
         //删除缓存中的code
-        String code = (String)session.getAttribute("code");
+        String code = (String)session.getAttribute(Constant.CODE);
 
         String key = redisUtils.getSSOKey(ECODE.CODE.getName(), code+IpUtil.getIpAddress(request));
         //授权码code默认保存15分钟,保存用户登录信息

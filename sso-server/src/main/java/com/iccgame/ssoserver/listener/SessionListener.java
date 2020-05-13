@@ -1,6 +1,7 @@
 package com.iccgame.ssoserver.listener;
 
 import com.alibaba.fastjson.JSON;
+import com.iccgame.ssoserver.common.Constant;
 import com.iccgame.ssoserver.enums.ECODE;
 import com.iccgame.ssoserver.util.RedisUtils;
 import com.iccgame.ssoserver.vo.ClientInfoVo;
@@ -27,7 +28,7 @@ public class SessionListener implements HttpSessionListener {
     public void sessionDestroyed(HttpSessionEvent se) {
         //System.out.println("触发了session销毁事件......");
         HttpSession session = se.getSession();
-        String code = (String)session.getAttribute("code");
+        String code = (String)session.getAttribute(Constant.CODE);
         //删除t_token表中的数据
         //String tokenKey = redisUtils.getSSOKey(ECODE.CODE.getName(), code);
         String tokenClientInfoKey = redisUtils.getSSOKey(ECODE.CODE_CLIENT_INFO.getName(), code);
