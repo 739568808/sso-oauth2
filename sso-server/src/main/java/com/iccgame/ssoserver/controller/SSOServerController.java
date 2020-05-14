@@ -11,6 +11,7 @@ import com.iccgame.ssoserver.service.SsoPlatformService;
 import com.iccgame.ssoserver.service.SsoUserService;
 import com.iccgame.ssoserver.util.*;
 import com.iccgame.ssoserver.vo.*;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
@@ -28,6 +29,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 @Controller
+@Slf4j
 public class SSOServerController {
 
 
@@ -131,7 +133,7 @@ public class SSOServerController {
         if (null == user){
             return ResultUtil.error("邮箱不存在");
         }
-
+        log.info("登录密码"+login.getPassword()+"加密后{}",SignUtil.md5(login.getPassword()));
         if (user.getEmail().equals(user.getEmail()) && user.getPassword().equals(SignUtil.md5(login.getPassword()))){
             //1、创建授权码
             String code = UUID.randomUUID().toString();
