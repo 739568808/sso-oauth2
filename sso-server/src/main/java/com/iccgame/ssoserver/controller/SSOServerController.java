@@ -152,7 +152,7 @@ public class SSOServerController {
             map.put("code",code);
             return ResultUtil.success(map);
         }
-        return ResultUtil.error("账户名或密码错误");
+        return ResultUtil.error("邮箱或密码错误");
     }
 
 
