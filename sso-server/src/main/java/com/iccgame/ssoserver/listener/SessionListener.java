@@ -21,6 +21,14 @@ import java.util.List;
 @Slf4j
 public class SessionListener implements HttpSessionListener {
 
+
+    @Override
+    public void sessionCreated(HttpSessionEvent httpSessionEvent) {
+
+    }
+
+
+
     @Autowired
     private RedisUtils redisUtils;
 
@@ -47,7 +55,7 @@ public class SessionListener implements HttpSessionListener {
                 }
             }
         }
-       // redisUtils.del(tokenKey);
+        // redisUtils.del(tokenKey);
         redisUtils.del(tokenClientInfoKey);
     }
 

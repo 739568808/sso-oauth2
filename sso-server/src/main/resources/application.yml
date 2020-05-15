@@ -6,3 +6,4 @@ server:
     session:
       cookie:
         name: sso_server
+    context-path: /sso/server
