@@ -5,9 +5,9 @@ spring:
     druid:
       driverClassName: com.mysql.jdbc.Driver
       #url: jdbc:mysql://172.21.0.9:3306/tools?useUnicode=yes&characterEncoding=UTF-8&useSSL=false
-      url: jdbc:mysql://127.0.0.1:3306/iccgame-sso?useUnicode=yes&characterEncoding=UTF-8&useSSL=false&serverTimezone=UTC
-      username: root
-      password:
+      url: jdbc:mysql://127.0.0.1:3306/sso_admin?useUnicode=yes&characterEncoding=UTF-8&useSSL=false&serverTimezone=UTC
+      username: sso_admin
+      password: sso_adminiccGAME!@#456
       maxActive: 50
       minIdle: 5
   redis:

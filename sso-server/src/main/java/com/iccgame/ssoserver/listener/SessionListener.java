@@ -32,9 +32,10 @@ public class SessionListener implements HttpSessionListener {
         //删除t_token表中的数据
         //String tokenKey = redisUtils.getSSOKey(ECODE.CODE.getName(), code);
         String tokenClientInfoKey = redisUtils.getSSOKey(ECODE.CODE_CLIENT_INFO.getName(), code);
-
+        log.info("监听session销tokenClientInfoKey>>>>{}",tokenClientInfoKey);
         String tokenClientInfoStr = redisUtils.get(tokenClientInfoKey);
         List<ClientInfoVo> clientInfoList = JSON.parseArray(tokenClientInfoStr, ClientInfoVo.class);
+        log.info("监听session销地址>>>>{}",JSON.toJSON(clientInfoList));
         if (!CollectionUtils.isEmpty(clientInfoList)){
             //获取出注册的子系统，依次调用子系统的登出方法
             for (ClientInfoVo vo:clientInfoList){
@@ -57,6 +58,8 @@ public class SessionListener implements HttpSessionListener {
                     .header("Cookie", sessionType+"=" + sessionid)
                     .ignoreContentType(true)
                     .method(Connection.Method.GET).execute();
+
+            log.info("监听session销返回结果>>>>{}",response.body());
         }catch (IOException e){
             e.printStackTrace();
         }

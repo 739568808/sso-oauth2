@@ -57,6 +57,7 @@ public class SSOServerController {
     public String checklogin(String success_redirectUrl, String fail_redirectUrl, HttpSession session,HttpServletRequest request){
         //1、判断是否有全局的会话
         String code = (String) session.getAttribute(Constant.CODE);
+        log.info("checkLogin>>>>code={}",code);
         if (StringUtils.isEmpty(code)){
             //没有全局会话
             return "redirect:"+fail_redirectUrl;
@@ -136,12 +137,14 @@ public class SSOServerController {
         log.info("登录密码"+login.getPassword()+"加密后{}",SignUtil.md5(login.getPassword()));
         if (user.getEmail().equals(user.getEmail()) && user.getPassword().equals(SignUtil.md5(login.getPassword()))){
             //1、创建授权码
-            String code = UUID.randomUUID().toString();
+            String code = UUID.randomUUID().toString().replaceAll("-","");
             //String code = MI.encoder(JSON.toJSONString(user));
             //2、创建全局会话，将令牌放入会话中
             session.setAttribute(Constant.CODE,code);
             //3、将令牌信息放入数据库中（redis中）
+
             String key = redisUtils.getSSOKey(ECODE.CODE.getName(), code+IpUtil.getIpAddress(request));
+            log.info("login>>>>key={}",key);
             //授权码code默认保存15分钟,保存用户登录信息
             redisUtils.set(key, JSON.toJSONString(user),Long.valueOf(refresh_token_timeout), TimeUnit.MINUTES);
 
@@ -162,6 +165,7 @@ public class SSOServerController {
     @RequestMapping("/oauth/token")
     @ResponseBody
     public String verifyToken(OAuthToken oAuthToken,HttpSession session){
+        log.info("/oauth/token>>>>OAuthToken={}", JSON.toJSON(oAuthToken));
         if (!this.cheakParam(oAuthToken)){
             return ResultUtil.error(1000,"缺少请求参数");
         }
@@ -180,6 +184,8 @@ public class SSOServerController {
         }
 
         String codeKey = redisUtils.getSSOKey(ECODE.CODE.getName(), oAuthToken.getCode()+oAuthToken.getIp());
+
+        log.info("codeKey>>>>{}",codeKey);
         String code = redisUtils.get(codeKey);
         if (StringUtils.isEmpty(code)){
             return ResultUtil.error(2001,"code失效或不存在");
