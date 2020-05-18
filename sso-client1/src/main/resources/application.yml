@@ -1,12 +1,8 @@
 server:
   port: 8081
-
-
-
-
 sso:
   url:
-   prefix: http://www.sso.com:8080
+   prefix: http://oa.sso.iccgame.com/sso/server
 client:
   host:
     url: http://www.c1.com:8081
