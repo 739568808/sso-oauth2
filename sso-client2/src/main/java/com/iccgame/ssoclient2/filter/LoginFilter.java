@@ -1,25 +1,9 @@
 package com.iccgame.ssoclient2.filter;
 
 
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.SortedMap;
-import java.util.TreeMap;
-
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.annotation.WebFilter;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-
 import com.iccgame.ssoclient2.util.IpUtil;
 import com.iccgame.ssoclient2.util.SignUtil;
-import net.sf.json.JSON;
+import lombok.extern.slf4j.Slf4j;
 import net.sf.json.JSONObject;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
@@ -27,8 +11,20 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+import javax.servlet.*;
+import javax.servlet.annotation.WebFilter;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import java.io.IOException;
+import java.net.URLEncoder;
+import java.util.Arrays;
+import java.util.SortedMap;
+import java.util.TreeMap;
+
 @Component
 @WebFilter(urlPatterns="/**",filterName="loginFilter")
+@Slf4j
 public class LoginFilter implements Filter{
 
     @Value("${sso.url.prefix}")
@@ -60,7 +56,7 @@ public class LoginFilter implements Filter{
             chain.doFilter(request, response);
             return;
         }
-        System.out.println("开始拦截了................");
+//        System.out.println("开始拦截了................");
         //1、判断请求地址是否存在
         //TODO 不存在自行跳转
         //1、判断是否有局部的会话
@@ -80,20 +76,20 @@ public class LoginFilter implements Filter{
             //判断token是否有认证中心生成的
 
             SortedMap<String, String> params = new TreeMap<String, String>();
-            params.put("client_id", "123456789");
+            params.put("client_id", "1589440911791429577");
             params.put("response_type", "code");
-            params.put("redirect_uri", CLIENT_HOST_URL);
+            params.put("redirect_uri", URLEncoder.encode(CLIENT_HOST_URL,"UTF-8"));
             params.put("code", code);
             params.put("session_type", "JSESSIONID");
             params.put("session_id", session.getId());
-            params.put("log_out_url", CLIENT_HOST_URL+"/logOut");
-            params.put("client_secret","123456789123456789");
+            params.put("log_out_url", URLEncoder.encode(CLIENT_HOST_URL+"/logOut","UTF-8"));
+            params.put("client_secret","gNN7CmzrE3BQkQyosfLDkqEduk9jAJdu");
             params.put("ip",ip);
             String sign = SignUtil.sign(params);
 
 
             Connection.Response  resp = Jsoup.connect(SSO_URL_PREFIX + "/oauth/token")
-                    .data("client_id", "123456789")
+                    .data("client_id", "1589440911791429577")
                     .data("sign", sign)
                     .data("response_type", "code")
                     .data("redirect_uri", CLIENT_HOST_URL)
@@ -104,6 +100,7 @@ public class LoginFilter implements Filter{
                     .data("ip",ip)
                     .method(Connection.Method.POST).execute();
             String result = resp.body();
+            log.info("code验证返回>>>>{}",result);
             JSONObject object = JSONObject.fromObject(result);
             if (object.getInt("code")==200){
                 //说明token是有统一认证中心产生的，可以创建局部的会话
@@ -114,6 +111,7 @@ public class LoginFilter implements Filter{
                 chain.doFilter(request, response);
                 return;
             }
+            return;
 
         }
         //2、没有局部会话，重定向到统一认证中心，检查是否其他系统已经登录过
@@ -133,8 +131,8 @@ public class LoginFilter implements Filter{
             String redirectUrl = CLIENT_HOST_URL+req.getServletPath();
             StringBuilder url = new StringBuilder();
             url.append(SSO_URL_PREFIX)
-                    .append("/checkLogin?success_redirectUrl=").append(redirectUrl)
-                    .append("&fail_redirectUrl=").append(redirectUrl+"login");
+                    .append("/checkLogin?success_redirectUrl=").append(URLEncoder.encode(redirectUrl,"UTF-8"))
+                    .append("&fail_redirectUrl=").append(URLEncoder.encode(redirectUrl+"login","UTF-8"));
             res.sendRedirect(url.toString());
         }catch (Exception e){
             System.out.println("跳转失败");
