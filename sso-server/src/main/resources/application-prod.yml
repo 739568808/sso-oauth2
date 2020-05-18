@@ -1,17 +1,16 @@
 server:
-  port: 8091
+  port: 18091
 spring:
   datasource:
     druid:
       driverClassName: com.mysql.jdbc.Driver
-      #url: jdbc:mysql://172.21.0.9:3306/tools?useUnicode=yes&characterEncoding=UTF-8&useSSL=false
-      url: jdbc:mysql://127.0.0.1:3306/sso_admin?useUnicode=yes&characterEncoding=UTF-8&useSSL=false&serverTimezone=UTC
+      url: jdbc:mysql://192.168.0.221:3306/sso_admin?useUnicode=yes&characterEncoding=UTF-8&useSSL=false&serverTimezone=UTC
       username: sso_admin
       password: sso_adminiccGAME!@#456
       maxActive: 50
       minIdle: 5
   redis:
-    host: 127.0.0.1
+    host: 192.168.0.221
     port: 6379
     password:
     max-idle: 20
